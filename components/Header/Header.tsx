@@ -16,7 +16,7 @@ function Logo() {
 
 export default function Header() {
   return (
-    <div>
+    <div className="p-2 flex justify-between items-center">
       <Logo />
       <ModeToggle />
     </div>

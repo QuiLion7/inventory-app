@@ -9,6 +9,9 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -19,10 +22,19 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { useState } from "react";
+import { BiFirstPage, BiLastPage } from "react-icons/bi";
+import { GrFormPrevious, GrFormNext } from "react-icons/gr";
+import PaginationSelection from "./PaginationSelection";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+}
+
+export interface PaginationType {
+  pageIndex: number;
+  pageSize: number;
 }
 
 function FilterArea() {
@@ -56,10 +68,25 @@ export default function ProductTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [pagination, setPagination] = useState<PaginationType>({
+    pageIndex: 0,
+    pageSize: 8,
+  });
+
+  const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
     data,
     columns,
+    state: {
+      pagination,
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -127,6 +154,60 @@ export default function ProductTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between mt-5">
+        <PaginationSelection
+          pagination={pagination}
+          setPagination={setPagination}
+        />
+
+        <div className="flex gap-6 items-center">
+          <span className="text-sm text-gray-500">
+            Página {pagination.pageIndex + 1} de {table.getPageCount()}
+          </span>
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <Button
+              variant="outline"
+              className="size-9 w-12"
+              size="sm"
+              onClick={() => table.setPageIndex(0)}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <BiFirstPage />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="size-9 w-12"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <GrFormPrevious />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="size-9 w-12"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <GrFormNext />
+            </Button>
+
+            <Button
+              variant="outline"
+              className="size-9 w-12"
+              size="sm"
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              disabled={!table.getCanNextPage()}
+            >
+              <BiLastPage />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

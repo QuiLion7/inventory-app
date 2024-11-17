@@ -1,3 +1,6 @@
+import { columns } from "../Product/columns";
+import { products } from "../Product/productData";
+import ProductTable from "../Product/ProductTable";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
@@ -14,7 +17,9 @@ export default function Table() {
         </div>
       </CardHeader>
 
-      <CardContent></CardContent>
+      <CardContent>
+        <ProductTable data={products} columns={columns} />
+      </CardContent>
     </Card>
   );
 }

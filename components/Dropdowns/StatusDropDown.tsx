@@ -19,37 +19,59 @@ type Status = {
 
 const statuses: Status[] = [
   {
-    value: "published",
+    value: "publicado",
     label: "Publicado",
     icon: <FaCheck />,
   },
   {
-    value: "inactive",
+    value: "inativo",
     label: "Inativo",
     icon: <IoClose />,
   },
   {
-    value: "draft",
+    value: "rascunho",
     label: "Rascunho",
     icon: <FaInbox />,
   },
 ];
 
-export function StatusDropDown() {
+type StatusDropDownProps = {
+  selectedStatuses: string[];
+  setSelectedStatuses: React.Dispatch<React.SetStateAction<string[]>>;
+};
+
+export function StatusDropDown({
+  selectedStatuses,
+  setSelectedStatuses,
+}: StatusDropDownProps) {
   const [open, setOpen] = React.useState(false);
 
   function returnColor(status: string) {
     switch (status) {
-      case "published":
+      case "publicado":
         return "text-green-600 bg-green-100";
-      case "inactive":
+      case "inativo":
         return "text-red-600 bg-red-100";
-      case "draft":
+      case "rascunho":
         return "text-gray-600 bg-gray-100";
 
       default:
         break;
     }
+  }
+
+  function handleCheckboxChange(value: string) {
+    setSelectedStatuses((prev) => {
+      const updateStatuses = prev.includes(value)
+        ? prev.filter((status) => status !== value)
+        : [...prev, value];
+
+      return updateStatuses;
+    });
+  }
+
+  function clearFilters() {
+    setSelectedStatuses([]);
   }
 
   return (
@@ -74,8 +96,13 @@ export function StatusDropDown() {
                     key={status.value}
                     className="h-10 mb-2"
                     value={status.value}
+                    onClick={() => handleCheckboxChange(status.value)}
                   >
-                    <Checkbox className="size-4 rounded" />
+                    <Checkbox
+                      className="size-4 rounded"
+                      checked={selectedStatuses.includes(status.value)}
+                      onCheckedChange={() => handleCheckboxChange(status.value)}
+                    />
                     <div
                       className={`flex items-center gap-1 ${returnColor(
                         status.value
@@ -90,7 +117,11 @@ export function StatusDropDown() {
             </CommandList>
             <div className="flex flex-col gap-2 text-2xl">
               <Separator />
-              <Button variant="ghost" className="text-xs mb-1">
+              <Button
+                variant="ghost"
+                className="text-xs mb-1"
+                onClick={() => clearFilters()}
+              >
                 Limpar Filtros
               </Button>
             </div>

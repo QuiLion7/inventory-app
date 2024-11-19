@@ -23,20 +23,47 @@ type Category = {
 };
 
 const categories: Category[] = [
-  { value: "electronics", label: "Eletrônicos" },
-  { value: "furniture", label: "Mobiliário" },
-  { value: "clothing", label: "Roupas" },
-  { value: "books", label: "Livros" },
-  { value: "toys", label: "Brinquedos" },
-  { value: "beauty", label: "Beleza" },
-  { value: "sports", label: "Esportes" },
-  { value: "home-decor", label: "Decoração" },
-  { value: "home-appliances", label: "Eletrodomésticos" },
-  { value: "others", label: "Outros" },
+  { value: "eletrônicos", label: "Eletrônicos" },
+  { value: "mobiliário", label: "Mobiliário" },
+  { value: "roupas", label: "Roupas" },
+  { value: "livros", label: "Livros" },
+  { value: "brinquedos", label: "Brinquedos" },
+  { value: "beleza", label: "Beleza" },
+  { value: "esportes", label: "Esportes" },
+  { value: "decoração", label: "Decoração" },
+  { value: "eletrodomésticos", label: "Eletrodomésticos" },
+  { value: "outros", label: "Outros" },
 ];
 
-export function CategoriesDropDown() {
+type CategoriesDropDownProps = {
+  selectedCategories: string[];
+  setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>;
+};
+
+export function CategoriesDropDown({
+  selectedCategories,
+  setSelectedCategories,
+}: CategoriesDropDownProps) {
   const [open, setOpen] = React.useState(false);
+
+  console.log("Selected Categories", selectedCategories);
+
+  function handleCheckboxChange(value: string) {
+    console.log("Handling change for category", value);
+
+    setSelectedCategories((prev) => {
+      const updateCategories = prev.includes(value)
+        ? prev.filter((category) => category !== value)
+        : [...prev, value];
+
+      console.log("Update Categories", updateCategories);
+      return updateCategories;
+    });
+  }
+
+  function clearFilters() {
+    setSelectedCategories([]);
+  }
 
   return (
     <div className="flex items-center space-x-4 poppins">
@@ -61,7 +88,11 @@ export function CategoriesDropDown() {
                     className="h-9"
                     value={category.value}
                   >
-                    <Checkbox className="size-4 rounded" />
+                    <Checkbox
+                      className="size-4 rounded"
+                      checked={selectedCategories.includes(category.value)}
+                      onClick={() => handleCheckboxChange(category.value)}
+                    />
                     <div
                       className={`flex items-center gap-1 p-1 rounded-lg px-3 text-sm`}
                     >
@@ -73,7 +104,11 @@ export function CategoriesDropDown() {
             </CommandList>
             <div className="flex flex-col gap-2 text-2xl">
               <Separator />
-              <Button variant="ghost" className="text-xs mb-1">
+              <Button
+                variant="ghost"
+                className="text-xs mb-1"
+                onClick={() => clearFilters()}
+              >
                 Limpar Filtros
               </Button>
             </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { IoClose } from "react-icons/io5";
@@ -7,12 +9,15 @@ import { StatusDropDown } from "../Dropdowns/StatusDropDown";
 import { CategoriesDropDown } from "../Dropdowns/CategoryDropDown";
 import {
   ColumnDef,
+  ColumnFiltersState,
+  SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
+  FilterFn,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -22,10 +27,11 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { BiFirstPage, BiLastPage } from "react-icons/bi";
 import { GrFormPrevious, GrFormNext } from "react-icons/gr";
 import PaginationSelection from "./PaginationSelection";
+import React from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -37,30 +43,94 @@ export interface PaginationType {
   pageSize: number;
 }
 
-function FilterArea() {
-  return (
-    <div className="flex gap-3">
-      <div className="border-dashed border rounded-sm p-1 flex gap-2 items-center px-2 text-sm">
-        <span className="text-gray-600">Status</span>
-        <Separator orientation="vertical" />
-        <div className="flex gap-2 items-center">
-          <Badge variant="secondary">item 1</Badge>
-          <Badge variant="secondary">item 1</Badge>
-        </div>
-      </div>
+declare module "@tanstack/table-core" {
+  interface FilterFns {
+    multiSelect: FilterFn<unknown>;
+  }
+}
 
-      <div className="border-dashed border rounded-sm p-1 flex gap-2 items-center px-2 text-sm">
-        <span className="text-gray-600">Categoria</span>
-        <Separator orientation="vertical" />
-        <div className="flex gap-2 items-center">
-          <Badge variant="secondary">item 1</Badge>
-          <Badge variant="secondary">item 1</Badge>
+const multiSelectFilter: FilterFn<unknown> = (
+  row,
+  columnId,
+  filterValue: string[]
+) => {
+  const rowValue = (row.getValue(columnId) as string).toLowerCase();
+  const lowercaseFilterValues = filterValue.map((val) => val.toLowerCase());
+  return filterValue.length === 0 || lowercaseFilterValues.includes(rowValue);
+};
+
+console.log("multSelectFilter", multiSelectFilter);
+
+function FilterArea({
+  selectedStatuses,
+  setSelectedStatuses,
+  selectedCategories,
+  setSelectedCategories,
+}: {
+  selectedStatuses: string[];
+  setSelectedStatuses: Dispatch<SetStateAction<string[]>>;
+  selectedCategories: string[];
+  setSelectedCategories: Dispatch<SetStateAction<string[]>>;
+}) {
+  return (
+    <div className="flex gap-3 poppins">
+      {selectedStatuses.length > 0 && (
+        <div className="border-dashed border rounded-sm p-1 flex gap-2 items-center px-2 text-sm">
+          <span className="text-gray-600">Status</span>
+          <Separator orientation="vertical" />
+          <div className="flex gap-2 items-center">
+            {selectedStatuses.length < 3 ? (
+              <>
+                {selectedStatuses.map((status, index) => (
+                  <Badge key={index} variant="secondary">
+                    {status}
+                  </Badge>
+                ))}
+              </>
+            ) : (
+              <>
+                <Badge variant="secondary">3 Selecionados</Badge>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-      <Button variant="ghost" className="p-1 px-2">
-        <span>Redefinir</span>
-        <IoClose />
-      </Button>
+      )}
+
+      {selectedCategories.length > 0 && (
+        <div className="border-dashed border rounded-sm p-1 flex gap-2 items-center px-2 text-sm">
+          <span className="text-gray-600">Categoria</span>
+          <Separator orientation="vertical" />
+          <div className="flex gap-2 items-center">
+            {selectedCategories.length < 3 ? (
+              <>
+                {selectedCategories.map((category, index) => (
+                  <Badge key={index} variant="secondary">
+                    {category}
+                  </Badge>
+                ))}
+              </>
+            ) : (
+              <>
+                <Badge variant="secondary">3 Selecionados</Badge>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {selectedCategories.length > 0 && selectedStatuses.length > 0 && (
+        <Button
+          variant="ghost"
+          className="p-1 px-2"
+          onClick={() => {
+            setSelectedStatuses([]);
+            setSelectedCategories([]);
+          }}
+        >
+          <span>Redefinir</span>
+          <IoClose />
+        </Button>
+      )}
     </div>
   );
 }
@@ -74,16 +144,57 @@ export default function ProductTable<TData, TValue>({
   });
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  console.log(selectedCategories);
+
+  useEffect(() => {
+    setColumnFilters((prev) => {
+      const baseFilters = prev.filter(
+        (filter) => filter.id !== "status" && filter.id !== "category"
+      );
+
+      const newFilters = [...baseFilters];
+
+      if (selectedStatuses.length > 0) {
+        newFilters.push({
+          id: "status",
+          value: selectedStatuses,
+        });
+      }
+
+      if (selectedCategories.length > 0) {
+        newFilters.push({
+          id: "category",
+          value: selectedCategories,
+        });
+      }
+
+      console.log("New Column Filters", newFilters);
+      return newFilters;
+    });
+  }, [selectedStatuses, selectedCategories]);
+
   const table = useReactTable({
     data,
     columns,
     state: {
       pagination,
       sorting,
+      columnFilters,
+    },
+    filterFns: {
+      multiSelect: multiSelectFilter,
     },
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -96,13 +207,28 @@ export default function ProductTable<TData, TValue>({
           <Input
             placeholder="Pesquisar por nome..."
             className="max-w-sm h-10"
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
           />
           <div className="flex items-center gap-4">
-            <StatusDropDown />
-            <CategoriesDropDown />
+            <StatusDropDown
+              selectedStatuses={selectedStatuses}
+              setSelectedStatuses={setSelectedStatuses}
+            />
+            <CategoriesDropDown
+              selectedCategories={selectedCategories}
+              setSelectedCategories={setSelectedCategories}
+            />
           </div>
         </div>
-        <FilterArea />
+        <FilterArea
+          selectedStatuses={selectedStatuses}
+          setSelectedStatuses={setSelectedStatuses}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+        />
       </div>
 
       <div className="rounded-md border">

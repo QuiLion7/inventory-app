@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/Header/Header";
+import { DeleteDialog } from "@/components/Product/DeleteDialog";
 import Table from "@/components/Table/Table";
 import { Card } from "@/components/ui/card";
 import { useTheme } from "next-themes";
@@ -18,8 +19,9 @@ export default function Home() {
   if (!isClient) return null;
 
   return (
-    <div className={`poppins p-5 ${bgColor} border w-full min-h-screen`}>
+    <div className={`poppins p-3 ${bgColor} border min-h-screen`}>
       <Card className="flex flex-col shadow-none p-2">
+        <DeleteDialog />
         <Header />
         <Table />
       </Card>

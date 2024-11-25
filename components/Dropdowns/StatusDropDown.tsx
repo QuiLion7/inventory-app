@@ -75,10 +75,10 @@ export function StatusDropDown({
   }
 
   return (
-    <div className="flex items-center space-x-4 poppins">
+    <div className="flex items-center space-x-4 poppins w-full">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="secondary" className="h-10">
+          <Button variant="secondary" className="h-10 w-full sm:w-auto">
             <LucideGitPullRequestDraft />
             Status
           </Button>

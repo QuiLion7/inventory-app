@@ -202,17 +202,17 @@ export default function ProductTable<TData, TValue>({
 
   return (
     <div className="">
-      <div className="flex flex-col gap-3 mb-8 mt-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 mb-6 mt-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-between">
           <Input
             placeholder="Pesquisar por nome..."
-            className="max-w-sm h-10"
+            className="w-full sm:max-w-sm h-10"
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("name")?.setFilterValue(event.target.value)
             }
           />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
             <StatusDropDown
               selectedStatuses={selectedStatuses}
               setSelectedStatuses={setSelectedStatuses}
@@ -274,7 +274,7 @@ export default function ProductTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Sem resultados.
                 </TableCell>
               </TableRow>
             )}
@@ -282,17 +282,17 @@ export default function ProductTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between mt-5">
+      <div className="flex flex-col gap-4 sm:gap-0 sm:flex-row items-center justify-between mt-5">
         <PaginationSelection
           pagination={pagination}
           setPagination={setPagination}
         />
 
-        <div className="flex gap-6 items-center">
-          <span className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row gap-0 sm:gap-6 items-center">
+          <span className="text-sm text-gray-500 order-2 sm:order-1">
             Página {pagination.pageIndex + 1} de {table.getPageCount()}
           </span>
-          <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex items-center justify-end space-x-2 py-4 order-1 sm:order-2">
             <Button
               variant="outline"
               className="size-9 w-12"
